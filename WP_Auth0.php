@@ -1,7 +1,7 @@
 <?php
 /**
- * Plugin Name: PLUGIN_NAME
- * Description: PLUGIN_DESCRIPTION
+ * Plugin Name: Auth0 (BOI Mod)
+ * Description: 
  * Version: 3.4.0
  * Author: Auth0
  * Author URI: https://auth0.com
