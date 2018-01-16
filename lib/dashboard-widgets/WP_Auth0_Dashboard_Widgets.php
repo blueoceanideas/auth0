@@ -13,60 +13,60 @@ class WP_Auth0_Dashboard_Widgets {
 	}
 
 	public function init() {
-		add_action( 'wp_dashboard_setup', array( $this, 'set_up' ) );
-		add_action( 'admin_footer', array( $this, 'render' ) );
+//		add_action( 'wp_dashboard_setup', array( $this, 'set_up' ) );
+//		add_action( 'admin_footer', array( $this, 'render' ) );
 
-		add_action( 'admin_notices', array( $this, 'show_admin_notice' ) );
-		add_action( 'admin_init', array( $this, 'notice_ignore' ) );
+//		add_action( 'admin_notices', array( $this, 'show_admin_notice' ) );
+//		add_action( 'admin_init', array( $this, 'notice_ignore' ) );
 	}
 
 	public function show_admin_notice() {
-		$screen = get_current_screen();
-		if ( $screen->id !== 'dashboard' ) {
-			return;
-		}
-
-		global $current_user ;
-		$user_id = $current_user->ID;
-
-		if ( ! get_user_meta( $user_id, 'a0_ignore_widgets_explanation' ) ) {
-			echo '<div class="updated"><p>';
-			printf( __( 'Auth0 tip: You can filter the data by clicking on the charts. Click again to clear the selection.  | <a href="%1$s">Hide</a>', 'wp-auth0' ), '?a0_ignore_widgets_explanation=0' );
-			echo "</p></div>";
-		}
+//		$screen = get_current_screen();
+//		if ( $screen->id !== 'dashboard' ) {
+//			return;
+//		}
+//
+//		global $current_user ;
+//		$user_id = $current_user->ID;
+//
+//		if ( ! get_user_meta( $user_id, 'a0_ignore_widgets_explanation' ) ) {
+//			echo '<div class="updated"><p>';
+//			printf( __( 'Auth0 tip: You can filter the data by clicking on the charts. Click again to clear the selection.  | <a href="%1$s">Hide</a>', 'wp-auth0' ), '?a0_ignore_widgets_explanation=0' );
+//			echo "</p></div>";
+//		}
 	}
 
 	public function notice_ignore() {
-		global $current_user;
-		$user_id = $current_user->ID;
-		if ( isset( $_GET['a0_ignore_widgets_explanation'] ) && '0' == $_GET['a0_ignore_widgets_explanation'] ) {
-			add_user_meta( $user_id, 'a0_ignore_widgets_explanation', 'true', true );
-		}
+//		global $current_user;
+//		$user_id = $current_user->ID;
+//		if ( isset( $_GET['a0_ignore_widgets_explanation'] ) && '0' == $_GET['a0_ignore_widgets_explanation'] ) {
+//			add_user_meta( $user_id, 'a0_ignore_widgets_explanation', 'true', true );
+//		}
 	}
 
 	protected function get_buckets( $from, $to, $step ) {
 
 		$buckets = array();
 
-		$buckets[] = array(
-			'from' => 0,
-			'to' => $from - 1,
-			'name' => $step == 1 ? ( $from - 1 ) : ( '< ' . ( $from - 1 ) ),
-		);
-
-		for ( $a = $from; $a < $to; $a += $step ) {
-			$buckets[] = array(
-				'from' => $a,
-				'to' => $a + $step - 1,
-				'name' => $step == 1 ? $a : ( $a . '-' . ( $a + $step - 1 ) ),
-			);
-		}
-
-		$buckets[] = array(
-			'from' => $a,
-			'to' => 200,
-			'name' => $step == 1 ? $a : ( '>= ' . $a ),
-		);
+//		$buckets[] = array(
+//			'from' => 0,
+//			'to' => $from - 1,
+//			'name' => $step == 1 ? ( $from - 1 ) : ( '< ' . ( $from - 1 ) ),
+//		);
+//
+//		for ( $a = $from; $a < $to; $a += $step ) {
+//			$buckets[] = array(
+//				'from' => $a,
+//				'to' => $a + $step - 1,
+//				'name' => $step == 1 ? $a : ( $a . '-' . ( $a + $step - 1 ) ),
+//			);
+//		}
+//
+//		$buckets[] = array(
+//			'from' => $a,
+//			'to' => 200,
+//			'name' => $step == 1 ? $a : ( '>= ' . $a ),
+//		);
 
 		return $buckets;
 
@@ -205,7 +205,7 @@ class WP_Auth0_Dashboard_Widgets {
 		);
 
 		foreach ( $widgets as $widget ) {
-			wp_add_dashboard_widget( $widget->getId(), $widget->getName(), array( $widget, 'render' ) );
+//			wp_add_dashboard_widget( $widget->getId(), $widget->getName(), array( $widget, 'render' ) );
 		}
 	}
 
