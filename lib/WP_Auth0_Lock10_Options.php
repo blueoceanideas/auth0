@@ -34,12 +34,11 @@ class WP_Auth0_Lock10_Options {
 
   public function get_code_callback_url() {
     $protocol = $this->_get_boolean( $this->wp_options->get( 'force_https_callback' ) ) ? 'https' : null;
-
-    return home_url( '/index.php?auth0=1', $protocol );
+    return $this->wp_options->get_wp_auth0_url( $protocol );
   }
 
   public function get_implicit_callback_url() {
-    return home_url( '/wp-login.php?auth0=1' );
+    return add_query_arg( 'auth0', 1, wp_login_url() );
   }
 
   public function get_sso() {
@@ -196,7 +195,7 @@ class WP_Auth0_Lock10_Options {
   }
 
   public function get_sso_options() {
-    $options["scope"] = "openid ";
+    $options["scope"] = "openid email identities ";
 
     if ( $this->get_auth0_implicit_workflow() ) {
       $options["responseType"] = 'id_token';
@@ -254,8 +253,7 @@ class WP_Auth0_Lock10_Options {
       $extraOptions["auth"]["redirectUrl"] = $this->get_code_callback_url();
     }
 
-    $options_obj = array_merge_recursive( $extraOptions, $options_obj  );
-    $options_obj = array_merge_recursive( $options_obj , $extended_settings );
+    $options_obj = array_replace_recursive( $extraOptions, $options_obj, $extended_settings );
 
     if ( ! $this->show_as_modal() ) {
       $options_obj['container'] = 'auth0-login-form';
