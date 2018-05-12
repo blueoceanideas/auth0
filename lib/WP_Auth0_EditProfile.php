@@ -28,9 +28,9 @@ class WP_Auth0_EditProfile {
 		add_action( 'personal_options_update', array( $this, 'update_change_password' ) );
 		add_filter( 'user_profile_update_errors', array( $this, 'validate_new_password' ), 10, 3 );
 
-		if ( $pagenow == 'profile.php' || $pagenow == 'user-edit.php' ) {
-			add_action( 'admin_footer', array( $this, 'disable_email_field' ) );
-		}
+//		if ( $pagenow == 'profile.php' || $pagenow == 'user-edit.php' ) {
+//			add_action( 'admin_footer', array( $this, 'disable_email_field' ) );
+//		}
 	}
 
 	public function validate_new_password( $errors, $update, $user ) {
