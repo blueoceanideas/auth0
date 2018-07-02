@@ -1,5 +1,5 @@
 {
-    "name": "auth0/wp-auth0",
+    "name": "auth0/auth0",
     "description": "",
     "type": "wordpress-plugin",
     "require-dev": {
