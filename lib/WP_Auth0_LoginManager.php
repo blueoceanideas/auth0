@@ -135,11 +135,20 @@ class WP_Auth0_LoginManager {
 			return;
 		}
 
+		LRT_Segment::track('Authentication: Login Initiated', false);
+
 		// Catch any incoming errors and stop the login process.
 		// See https://auth0.com/docs/libraries/error-messages for more info.
 		if ( ! empty( $_REQUEST['error'] ) || ! empty( $_REQUEST['error_description'] ) ) {
 			$error_msg  = sanitize_text_field( rawurldecode( $_REQUEST['error_description'] ) );
 			$error_code = sanitize_text_field( rawurldecode( $_REQUEST['error'] ) );
+
+            LRT_Segment::track('Authentication: Stage #1 Error', false, [
+                    'Error Code' => $error_code,
+                    'Error Message' => $error_msg
+                ]
+            );
+
 			$this->die_on_login( $error_msg, $error_code );
 		}
 
@@ -147,8 +156,17 @@ class WP_Auth0_LoginManager {
 		// See https://auth0.com/docs/protocols/oauth2/oauth-state for more info.
 		$state_returned = isset( $_REQUEST['state'] ) ? rawurldecode( $_REQUEST['state'] ) : null;
 		if ( ! $state_returned || ! WP_Auth0_State_Handler::get_instance()->validate( $state_returned ) ) {
+            LRT_Segment::track('Authentication: Stage #2 Error Invalid State', false, [
+                    'State Returned' => $state_returned,
+                ]
+            );
 			$this->die_on_login( __( 'Invalid state', 'wp-auth0' ) );
 		}
+
+        LRT_Segment::track('Authentication: Stage #2 Success Valid State', false, [
+                'State Returned' => $state_returned,
+            ]
+        );
 
 		try {
 			if ( $this->query_vars( 'auth0' ) === 'implicit' ) {
@@ -159,31 +177,70 @@ class WP_Auth0_LoginManager {
 		} catch ( WP_Auth0_LoginFlowValidationException $e ) {
 
 			// Errors encountered during the OAuth login flow.
+            LRT_Segment::track('Authentication: Stage #3 Error OAuth Login Flow', false, [
+                    'Error Code' => $e->getCode(),
+                    'Error Message' => $e->getMessage()
+                ]
+            );
 			$this->die_on_login( $e->getMessage(), $e->getCode() );
 		} catch ( WP_Auth0_BeforeLoginException $e ) {
 
 			// Errors encountered during the WordPress login flow.
+            // Errors encountered during the OAuth login flow.
+            LRT_Segment::track('Authentication: Stage #3 Error WordPress Login Flow', false, [
+                    'Error Code' => $e->getCode(),
+                    'Error Message' => $e->getMessage()
+                ]
+            );
 			$this->die_on_login( $e->getMessage(), $e->getCode(), false );
 		} catch ( DomainException $e ) {
 
 			// JWT:decode error - Algorithm was not provided.
+            LRT_Segment::track('Authentication: Stage #3 Error Invalid ID token (no algorithm)', false, [
+                    'Error Code' => $e->getCode(),
+                    'Error Message' => 'Invalid ID token (no algorithm)'
+                ]
+            );
 			$this->die_on_login( __( 'Invalid ID token (no algorithm)', 'wp-auth0' ), $e->getCode(), false );
 		} catch ( SignatureInvalidException $e ) {
 
 			// JWT:decode error - Provided JWT was invalid because the signature verification failed.
+            LRT_Segment::track('Authentication: Stage #3 Error Invalid ID token (failed signature verification)', false, [
+                    'Error Code' => $e->getCode(),
+                    'Error Message' => 'Invalid ID token (failed signature verification)'
+                ]
+            );
 			$this->die_on_login( __( 'Invalid ID token (failed signature verification)', 'wp-auth0' ), $e->getCode(), false );
 		} catch ( BeforeValidException $e ) {
 
 			// JWT:decode error - Provided JWT is trying to be used before it's eligible as defined by 'nbf'.
 			// JWT:decode error - Provided JWT is trying to be used before it's been created as defined by 'iat'.
+
+
+
+            LRT_Segment::track('Authentication: Stage #3 Error Invalid ID token (used too early)', false, [
+                    'Error Code' => $e->getCode(),
+                    'Error Message' => 'Invalid ID token (used too early)'
+                ]
+            );
 			$this->die_on_login( __( 'Invalid ID token (used too early)', 'wp-auth0' ), $e->getCode(), false );
 		} catch ( ExpiredException $e ) {
 
 			// JWT:decode error - Provided JWT has since expired, as defined by the 'exp' claim.
+            LRT_Segment::track('Authentication: Stage #3 Error Expired ID token', false, [
+                    'Error Code' => $e->getCode(),
+                    'Error Message' => 'Expired ID token'
+                ]
+            );
 			$this->die_on_login( __( 'Expired ID token', 'wp-auth0' ), $e->getCode(), false );
 		} catch ( UnexpectedValueException $e ) {
 
 			// JWT:decode error - Provided JWT was invalid.
+            LRT_Segment::track('Authentication: Stage #3 Error Invalid ID token', false, [
+                    'Error Code' => $e->getCode(),
+                    'Error Message' => 'Invalid ID token'
+                ]
+            );
 			$this->die_on_login( __( 'Invalid ID token', 'wp-auth0' ), $e->getCode(), false );
 		}
 	}
@@ -214,9 +271,20 @@ class WP_Auth0_LoginManager {
 		$exchange_resp_code = (int) wp_remote_retrieve_response_code( $exchange_resp );
 		$exchange_resp_body = wp_remote_retrieve_body( $exchange_resp );
 
-		if ( 401 === $exchange_resp_code ) {
 
+		if ( 401 === $exchange_resp_code ) {
 			// Not authorized to access the site.
+
+
+            LRT_Segment::track('Authentication: Stage #4 Error Not Authorized', false, [
+
+                    'Error Code' => 'Unknown Error',
+                    'Error Message' => 'An /oauth/token call triggered a 401 response from Auth0',
+                    'File' => __FILE__,
+                    'Method' => __METHOD__,
+                    'Line' => __LINE__
+                ]
+            );
 			WP_Auth0_ErrorManager::insert_auth0_error(
 				__METHOD__ . ' L:' . __LINE__,
 				__( 'An /oauth/token call triggered a 401 response from Auth0. ', 'wp-auth0' ) .
@@ -231,6 +299,15 @@ class WP_Auth0_LoginManager {
 				WP_Auth0_ErrorManager::insert_auth0_error( __METHOD__ . ' L:' . __LINE__, $exchange_resp );
 			}
 
+            LRT_Segment::track('Authentication: Stage #4 Empty Exchange Response Body', false, [
+                    'Error Code' => 'Unknown Error',
+                    'Error Message' => 'Empty Exchange Response Body',
+                    'File' => __FILE__,
+                    'Method' => __METHOD__,
+                    'Line' => __LINE__
+                ]
+            );
+
 			throw new WP_Auth0_LoginFlowValidationException( __( 'Unknown error', 'wp-auth0' ), $exchange_resp_code );
 		}
 
@@ -240,6 +317,16 @@ class WP_Auth0_LoginManager {
 
 			// Look for clues as to what went wrong.
 			$e_message = ! empty( $data->error_description ) ? $data->error_description : __( 'Unknown error', 'wp-auth0' );
+
+            LRT_Segment::track('Authentication: Stage #4 Error', false, [
+                    'Error Code' => 'Unknown Error',
+                    'Error Message' => $e_message,
+                    'File' => __FILE__,
+                    'Method' => __METHOD__,
+                    'Line' => __LINE__
+                ]
+            );
+
 			throw new WP_Auth0_LoginFlowValidationException( $e_message, $exchange_resp_code );
 		}
 
@@ -265,13 +352,28 @@ class WP_Auth0_LoginManager {
 
 		// Management API call failed, fallback to userinfo.
 		if ( 200 !== $userinfo_resp_code || empty( $userinfo_resp_body ) ) {
+            LRT_Segment::track('Authentication: Stage #5 Error Management API Call Failed', false, [
+                    'Error Code' => $userinfo_resp_code,
+                    'Error Message' => $userinfo_resp_body . ' + Management API call failed, fallback to userinfo.',
+                    'File' => __FILE__,
+                    'Method' => __METHOD__,
+                    'Line' => __LINE__
+                ]
+            );
 
 			$userinfo_resp      = WP_Auth0_Api_Client::get_user_info( $domain, $access_token );
 			$userinfo_resp_code = (int) wp_remote_retrieve_response_code( $userinfo_resp );
 			$userinfo_resp_body = wp_remote_retrieve_body( $userinfo_resp );
 
 			if ( 200 !== $userinfo_resp_code || empty( $userinfo_resp_body ) ) {
-
+                LRT_Segment::track('Authentication: Stage #5 Error WP_Auth0_Api_Client::get_user_info failed', false, [
+                        'Error Code' => $userinfo_resp_code,
+                        'Error Message' => $userinfo_resp . ' + WP_Auth0_Api_Client::get_user_info failed',
+                        'File' => __FILE__,
+                        'Method' => __METHOD__,
+                        'Line' => __LINE__
+                    ]
+                );
 				WP_Auth0_ErrorManager::insert_auth0_error( __METHOD__ . ' L:' . __LINE__, $userinfo_resp );
 				throw new WP_Auth0_LoginFlowValidationException(
 					__( 'Error getting user information', 'wp-auth0' ),
@@ -297,6 +399,13 @@ class WP_Auth0_LoginManager {
 				} else {
 					$redirect_url = $this->a0_options->get( 'default_login_redirection' );
 				}
+                LRT_Segment::track('Authentication: Stage #6 Success Redirect', false, [
+                        'Redirect URL' => $redirect_url,
+                        'File' => __FILE__,
+                        'Method' => __METHOD__,
+                        'Line' => __LINE__
+                    ]
+                );
 				wp_safe_redirect( $redirect_url );
 			}
 			exit();
@@ -718,6 +827,15 @@ class WP_Auth0_LoginManager {
 	 * @param bool       $login_link - TRUE for login link, FALSE for logout link.
 	 */
 	protected function die_on_login( $msg = '', $code = 0, $login_link = true ) {
+        LRT_Segment::track('Authentication: Stage #7 Login Failed', false, [
+                'Error Code' => $code,
+                'Error Message' => $msg,
+                'Login Link' => $login_link,
+                'File' => __FILE__,
+                'Method' => __METHOD__,
+                'Line' => __LINE__
+            ]
+        );
 		wp_die(
 			sprintf(
 				'%s: %s [%s: %s]<br><br><a href="%s">%s</a>',
