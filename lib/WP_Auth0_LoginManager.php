@@ -7,6 +7,8 @@
  * @since 2.0.0
  */
 
+use Theme\Controllers\Auth0Controller;
+
 /**
  * Handles login callbacks and auto-login redirecting
  *
@@ -836,23 +838,28 @@ class WP_Auth0_LoginManager {
                 'Line' => __LINE__
             ]
         );
-		wp_die(
-			sprintf(
-				'%s: %s [%s: %s]<br><br><a href="%s">%s</a>',
-				$login_link
-					? __( 'There was a problem with your log in', 'wp-auth0' )
-					: __( 'You have logged in successfully, but there is a problem accessing this site', 'wp-auth0' ),
-				! empty( $msg )
-					? sanitize_text_field( $msg )
-					: __( 'Please see the site administrator', 'wp-auth0' ),
-				__( 'error code', 'wp-auth0' ),
-				$code ? sanitize_text_field( $code ) : __( 'unknown', 'wp-auth0' ),
-				$login_link ? add_query_arg( 'skip_sso', '', wp_login_url() ) : wp_logout_url(),
-				$login_link
-					? __( '← Login', 'wp-auth0' )
-					: __( '← Logout', 'wp-auth0' )
-			)
-		);
+
+        (new Auth0Controller())->showErrorMessage( $msg, $code, $login_link );
+        
+        die();
+
+//		wp_die(
+//			sprintf(
+//				'%s: %s [%s: %s]<br><br><a href="%s">%s</a>',
+//				$login_link
+//					? __( 'There was a problem with your log in', 'wp-auth0' )
+//					: __( 'You have logged in successfully, but there is a problem accessing this site', 'wp-auth0' ),
+//				! empty( $msg )
+//					? sanitize_text_field( $msg )
+//					: __( 'Please see the site administrator', 'wp-auth0' ),
+//				__( 'error code', 'wp-auth0' ),
+//				$code ? sanitize_text_field( $code ) : __( 'unknown', 'wp-auth0' ),
+//				$login_link ? add_query_arg( 'skip_sso', '', wp_login_url() ) : wp_logout_url(),
+//				$login_link
+//					? __( '← Login', 'wp-auth0' )
+//					: __( '← Logout', 'wp-auth0' )
+//			)
+//		);
 	}
 
 	/**
