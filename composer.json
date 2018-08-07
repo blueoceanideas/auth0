@@ -1,5 +1,5 @@
 {
-    "name": "blueoceanideas/wp-auth0",
+    "name": "blueoceanideas/auth0",
     "description": "WordPress Plugin for Auth0",
     "type": "wordpress-plugin",
     "homepage": "https://auth0.com/wordpress",
