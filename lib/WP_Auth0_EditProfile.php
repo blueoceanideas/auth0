@@ -134,10 +134,10 @@ class WP_Auth0_EditProfile {
 				}
 			}
 
-			if ( $connection === null ) {
-				$errors->add( 'user_email', __( "<strong>ERROR</strong>: You can't change your email if you are using a social connection.", 'wp-auth0' ), array( 'form-field' => 'email' ) );
-				return false;
-			}
+//			if ( $connection === null ) {
+//				$errors->add( 'user_email', __( "<strong>ERROR</strong>: You can't change your email if you are using a social connection.", 'wp-auth0' ), array( 'form-field' => 'email' ) );
+//				return false;
+//			}
 
 			if ( ! is_email( $_POST['email'] ) ) {
 				$errors->add( 'user_email', __( '<strong>ERROR</strong>: The email address is not correct.', 'wp-auth0' ), array( 'form-field' => 'email' ) );
