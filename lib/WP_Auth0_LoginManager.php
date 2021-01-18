@@ -259,11 +259,20 @@ class WP_Auth0_LoginManager {
 				include WPA0_PLUGIN_DIR . 'templates/login-interim.php';
 			} else {
 				if ( ! empty( $state_decoded->redirect_to ) && wp_login_url() !== $state_decoded->redirect_to ) {
-					$redirect_url = $state_decoded->redirect_to;
+                    $redirect_url = apply_filters('login_redirect',
+                        $state_decoded->redirect_to,
+                        $state_decoded->redirect_to,
+                        get_user_by('email', $userinfo->email)
+                    );
 				} else {
-					$redirect_url = $this->a0_options->get( 'default_login_redirection' );
+                    $redirect_url = apply_filters('login_redirect',
+                        $this->a0_options->get('default_login_redirection'),
+                        null,
+                        get_user_by('email', $userinfo->email)
+                    );
 				}
-				wp_safe_redirect( $redirect_url );
+
+				wp_safe_redirect($redirect_url);
 			}
 			exit();
 		}
