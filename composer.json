@@ -1,7 +1,8 @@
 {
-    "name": "auth0/wp-auth0",
+    "name": "blueoceanideas/auth0",
     "description": "WordPress Plugin for Auth0",
     "homepage": "https://auth0.com/wordpress",
+    "type": "wordpress-plugin",
     "license": "GPLv2",
     "require": {
         "php": "^5.3 || ^7.0"
@@ -10,7 +11,8 @@
         "dealerdirect/phpcodesniffer-composer-installer": "^0.5",
         "wp-coding-standards/wpcs": "^1",
         "phpcompatibility/phpcompatibility-wp": "*",
-        "phpunit/phpunit": "^5.0 || ^6.0"
+        "phpunit/phpunit": "^5.0 || ^6.0",
+        "composer/installers": ">=1.4.0"
     },
     "authors": [
         {
