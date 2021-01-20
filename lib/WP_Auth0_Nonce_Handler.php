@@ -45,27 +45,29 @@ class WP_Auth0_Nonce_Handler {
 	 *
 	 * @var bool
 	 */
-	private $same_site_none;
+    private $same_site_none;
 
-	/**
-	 * Private to prevent cloning.
-	 */
+    /**
+     * Private to prevent cloning.
+     */
 	private function __clone() {}
 
-	/**
-	 * Private to prevent unserializing.
-	 */
-	private function __wakeup() {}
+    /**
+     * Private to prevent unserializing.
+     */
+    public function __wakeup()
+    {
+    }
 
-	/**
-	 * WP_Auth0_Nonce_Handler constructor.
-	 */
+    /**
+     * WP_Auth0_Nonce_Handler constructor.
+     */
 	public function __construct() {
-		$this->init();
-	}
+        $this->init();
+    }
 
-	/**
-	 * Start-up process to make sure we have something stored.
+    /**
+     * Start-up process to make sure we have something stored.
 	 */
 	protected function init() {
 		// If a NONCE_COOKIE_NAME is not defined then we don't need to persist the nonce value.
